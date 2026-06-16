@@ -33,8 +33,104 @@ MVP намеренно небольшой, но покрывает полный 
 - content-based retriever;
 - rank-based candidate merger;
 - post-retrieval business rules для region, difficulty, seen-route exclusion и fallback fill;
-- offline top-K evaluation на отложенных synthetic interactions;
+- offline top-K evaluation на отложенных synthetic interactions, включая precision/recall/MAP/NDCG/coverage/novelty/diversity;
 - FastAPI endpoint для online-style recommendation serving.
+
+## Краткая логика пайплайна
+
+В production-like системе входом могли бы быть SQLite / raw tables. В этой demo-версии вход зафиксирован как воспроизводимые synthetic CSV files.
+
+```text
+data/synthetic_users.csv
+data/synthetic_routes.csv
+data/synthetic_interactions.csv
+    ↓
+data_loader.py
+    ↓
+validated synthetic users/routes/interactions datasets
+    ↓
+features.py
+    ↓
+route features + user-route implicit-feedback matrix + seen-route maps
+    ↓
+baseline.py / collaborative.py / content_based.py
+    ↓
+retrieval candidates from popularity, item-item collaborative and content-based sources
+    ↓
+merger.py
+    ↓
+deduplicated hybrid candidate list with merged scores and sources
+    ↓
+business_rules.py
+    ├─ region filter
+    ├─ difficulty filter
+    ├─ seen-route exclusion
+    └─ fallback fill
+    ↓
+evaluation.py / api.py
+    ↓
+offline metrics / hybrid API response
+    ↓
+итоговая выдача рекомендаций
+```
+
+## Архитектура проекта
+
+```text
+project/                                      # Корень demo-проекта рекомендательной системы
+├─ README.md                                  # Основной README: обзор, запуск, pipeline, API и ссылки на docs
+├─ pyproject.toml                             # Package metadata, pytest settings и dev-зависимости
+├─ requirements.txt                           # Список runtime Python-зависимостей
+├─ LICENSE                                    # Лицензия проекта
+│
+├─ data/                                      # Воспроизводимые synthetic CSV datasets
+│  ├─ synthetic_users.csv                     # Синтетические пользователи
+│  ├─ synthetic_routes.csv                    # Синтетический каталог маршрутов
+│  ├─ synthetic_interactions.csv              # Полный synthetic implicit-feedback dataset
+│  ├─ synthetic_interactions_train.csv        # Train split для retrieval/evaluation сценариев
+│  └─ synthetic_interactions_test.csv         # Test split для offline evaluation
+│
+├─ scripts/                                   # CLI-скрипты для генерации, smoke checks и evaluation
+│  ├─ generate_synthetic_data.py              # Генерация synthetic users/routes/interactions
+│  ├─ run_baseline_smoke.py                   # Smoke check popularity baseline
+│  ├─ run_hybrid_smoke.py                     # Smoke check hybrid retrieval + merger + business rules
+│  └─ run_offline_evaluation.py               # Запуск offline top-K evaluation и запись artifacts
+│
+├─ src/hiking_recommender/                    # Основной Python package
+│  ├─ data_loader.py                          # Загрузка CSV и валидация public synthetic contracts
+│  ├─ schemas.py                              # Общие схемы и dataclass-модели рекомендаций
+│  ├─ features.py                             # Feature engineering и implicit-feedback matrix
+│  ├─ baseline.py                             # Popularity baseline и fallback candidates
+│  ├─ collaborative.py                        # Item-item collaborative retrieval
+│  ├─ content_based.py                        # Content-based retrieval по route features
+│  ├─ candidates.py                           # Общие структуры retrieval candidates
+│  ├─ merger.py                               # Candidate merger, deduplication и score aggregation
+│  ├─ business_rules.py                       # Region/difficulty/seen filters и fallback fill
+│  ├─ evaluation.py                           # Offline precision/recall/MAP/NDCG/coverage/novelty/diversity metrics
+│  └─ api.py                                  # FastAPI app: `GET /health`, `POST /recommendations`
+│
+├─ tests/                                     # Contract, smoke и regression tests для P0
+│  ├─ test_api.py                             # API health/recommendations contract checks
+│  ├─ test_baseline_smoke.py                  # Baseline smoke behavior
+│  ├─ test_business_rules.py                  # Business rules и fallback edge cases
+│  ├─ test_data_loader.py                     # Synthetic schema, references и event-weight checks
+│  ├─ test_evaluation.py                      # Offline metrics behavior
+│  ├─ test_features.py                        # Route features, matrix aggregation и train-only checks
+│  └─ test_hybrid_retrieval.py                # Hybrid retrieval, merge и duplicate checks
+│
+├─ docs/                                      # Документация baseline, архитектуры, evaluation и commercial handoff
+│  ├─ p0_baseline.md                          # Замороженный P0 scope, contracts и validation
+│  ├─ architecture.md                         # Pipeline и module boundaries
+│  ├─ data_readiness_checklist.md             # Checklist для оценки готовности каталожных данных
+│  ├─ commercial_use_cases.md                 # Переносимость demo на другие каталожные домены
+│  └─ evaluation_report.md                    # Текущие synthetic offline metrics
+│
+├─ outputs/                                   # Evaluation artifacts
+│  └─ evaluation_metrics.csv                  # CSV с offline metrics
+│
+└─ notebooks/                                 # Notebook demo для ручного walkthrough
+   └─ 01_pipeline_demo.ipynb                  # End-to-end demo pipeline
+```
 
 ## Статус baseline
 
@@ -89,7 +185,7 @@ Offline evaluation записывает synthetic metrics в:
 - `outputs/evaluation_metrics.csv`;
 - `docs/evaluation_report.md`.
 
-Метрики полезны для проверки demo pipeline. Они не являются утверждениями о production quality или business impact.
+Метрики полезны для проверки demo pipeline: ranking quality (`precision`, `recall`, `MAP`, `NDCG`), catalog reach (`coverage`) и P1-сигналы popularity bias / list variety (`novelty`, `diversity`). Они не являются утверждениями о production quality или business impact.
 
 ## Notebook demo
 
@@ -99,7 +195,7 @@ Offline evaluation записывает synthetic metrics в:
 jupyter notebook notebooks/01_pipeline_demo.ipynb
 ```
 
-Notebook показывает data loading, feature engineering, retrieval sources, candidate merging, business rules, offline metrics и пример API payload.
+Notebook показывает data loading, feature engineering, retrieval sources, candidate merging, business rules, offline metrics включая novelty/diversity и пример API payload.
 Также notebook добавляет локальный каталог `src/` в `sys.path`, поэтому может запускаться из Jupyter kernel без установки package в editable mode.
 
 ## API demo
@@ -160,5 +256,7 @@ MVP сохраняет разделение ответственности:
 - `api.py` обслуживает тот же MVP pipeline через `GET /health` и `POST /recommendations`.
 
 Pipeline diagram и границы модулей описаны в `docs/architecture.md`.
+
+Client-facing checklist и переносимость demo описаны в `docs/data_readiness_checklist.md` и `docs/commercial_use_cases.md`.
 
 ALS намеренно не входит в первый MVP. Начальная collaborative model использует item-item cosine similarity поверх implicit feedback matrix, чтобы candidate merger можно было собрать без тяжёлых dependencies.

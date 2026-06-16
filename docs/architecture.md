@@ -35,7 +35,7 @@ synthetic data
 - `content_based.py` рекомендует routes, похожие на user route-feature profile.
 - `merger.py` объединяет retrieval sources через weighted reciprocal-rank contributions.
 - `business_rules.py` применяет hard post-retrieval filters и safe fallback fill.
-- `evaluation.py` считает offline top-K metrics на отложенных синтетических interactions.
+- `evaluation.py` считает offline top-K metrics на отложенных синтетических interactions, включая coverage, novelty и diversity.
 - `api.py` обслуживает `GET /health` и `POST /recommendations`.
 
 ## Защищённые контракты

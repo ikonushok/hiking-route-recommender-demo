@@ -60,7 +60,7 @@ python scripts/run_hybrid_smoke.py
 python scripts/run_offline_evaluation.py
 ```
 
-Текущие синтетические offline-метрики хранятся в `docs/evaluation_report.md` и `outputs/evaluation_metrics.csv`.
+Текущие синтетические offline-метрики хранятся в `docs/evaluation_report.md` и `outputs/evaluation_metrics.csv`. P1-метрики `novelty@K` и `diversity@K` добавлены как диагностические сигналы popularity bias и разнообразия выдачи; они не являются production-impact claims.
 
 ## Точка расширения
 

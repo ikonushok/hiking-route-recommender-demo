@@ -92,6 +92,8 @@ def main() -> None:
             dataset.test_interactions,
             all_route_ids,
             cutoff=cutoff,
+            train_interactions=dataset.train_interactions,
+            routes=dataset.routes,
         )
         metrics_rows.append({"model": model_name, **metrics})
 
@@ -118,22 +120,69 @@ def _format_report(metrics_frame: pd.DataFrame, cutoff: int) -> str:
         values.extend(f"{float(row[column]):.4f}" for column in metric_columns)
         rows.append("| " + " | ".join(values) + " |")
 
+    best_precision = _best_model(metrics_frame, f"precision@{cutoff}")
+    best_recall = _best_model(metrics_frame, f"recall@{cutoff}")
+    best_coverage = _best_model(metrics_frame, f"coverage@{cutoff}")
+    best_novelty = _best_model(metrics_frame, f"novelty@{cutoff}")
+    best_diversity = _best_model(metrics_frame, f"diversity@{cutoff}")
+
     return "\n".join(
         [
             "# Offline Evaluation Report",
             "",
-            "Synthetic offline metrics on held-out synthetic interactions.",
+            "Synthetic offline metrics on held-out synthetic interactions for the hiking route recommender demo.",
             "",
             "These numbers are demo validation metrics, not production quality or business impact claims.",
             "",
+            "## Evaluation setup",
+            "",
+            "- Data source: reproducible synthetic CSV files in `data/`.",
+            "- Train/test split: time-aware holdout from synthetic interaction timestamps.",
+            "- Models compared: popularity, collaborative, content, hybrid, hybrid with business rules.",
+            "- Serving parity: the API uses the same retrieval, merge and business-rule modules as this evaluation.",
+            "",
             f"Cutoff: `{cutoff}`",
+            "",
+            "## Metrics",
+            "",
+            f"- `precision@{cutoff}`: share of top-K recommendations that appear in held-out interactions.",
+            f"- `recall@{cutoff}`: share of held-out relevant routes recovered in top-K.",
+            f"- `map@{cutoff}` and `ndcg@{cutoff}`: ranking-sensitive quality metrics.",
+            f"- `coverage@{cutoff}`: share of catalog routes surfaced across evaluated users.",
+            f"- `novelty@{cutoff}`: normalized inverse popularity from train interactions; higher means less popularity-biased.",
+            f"- `diversity@{cutoff}`: mean intra-list dissimilarity from synthetic route metadata; higher means broader lists.",
+            "",
+            "## Results",
             "",
             header,
             separator,
             *rows,
             "",
+            "## Reading the results",
+            "",
+            f"- Best `precision@{cutoff}`: `{best_precision}`.",
+            f"- Best `recall@{cutoff}`: `{best_recall}`.",
+            f"- Best `coverage@{cutoff}`: `{best_coverage}`.",
+            f"- Best `novelty@{cutoff}`: `{best_novelty}`.",
+            f"- Best `diversity@{cutoff}`: `{best_diversity}`.",
+            "- Business rules can reduce recall or coverage because they apply hard product constraints after retrieval.",
+            "- Hybrid results should be read as a candidate-generation demo, not as proof of online lift.",
+            "",
+            "## Reproduce",
+            "",
+            "```bash",
+            "python scripts/run_offline_evaluation.py",
+            "```",
+            "",
         ]
     )
+
+
+def _best_model(metrics_frame: pd.DataFrame, column: str) -> str:
+    if column not in metrics_frame.columns or metrics_frame.empty:
+        return "n/a"
+    row = metrics_frame.sort_values(by=[column, "model"], ascending=[False, True]).iloc[0]
+    return str(row["model"])
 
 
 if __name__ == "__main__":
