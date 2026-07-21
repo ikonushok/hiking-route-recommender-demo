@@ -3,15 +3,19 @@ __pycache__/
 *.py[cod]
 *$py.class
 *.so
-*.egg-info/
-*.egg
-dist/
-build/
-
-# Virtual environments
+.Python
 venv/
 .venv/
 env/
+ENV/
+*.egg-info/
+dist/
+build/
+
+# Testing & coverage
+.pytest_cache/
+.coverage
+htmlcov/
 
 # IDE
 .idea/
@@ -23,5 +27,10 @@ env/
 .DS_Store
 Thumbs.db
 
-# Generated data (regenerable via scripts/)
-ecommerce_data/
+# Project artifacts
+outputs/
+*.sqlite
+*.parquet
+
+# Grafana local state (provisioned from files)
+grafana_data/
