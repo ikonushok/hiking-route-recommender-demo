@@ -1,0 +1,19 @@
+global:
+  scrape_interval: 5s
+  evaluation_interval: 5s
+
+scrape_configs:
+  - job_name: "recommender-demo"
+    scrape_interval: 5s
+    static_configs:
+      - targets: ["host.docker.internal:8001"]
+        labels:
+          service: "hiking-recommender-demo"
+
+  - job_name: "pushgateway"
+    scrape_interval: 5s
+    honor_labels: true
+    static_configs:
+      - targets: ["pushgateway:9091"]
+        labels:
+          service: "pushgateway"

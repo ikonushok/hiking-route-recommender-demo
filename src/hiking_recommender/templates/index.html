@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recommender Lab — Demo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 min-h-screen">
+
+<div class="max-w-6xl mx-auto px-4 py-8">
+
+    <!-- Header -->
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-gray-900">Recommender Lab</h1>
+        <p class="text-gray-500 mt-1">AI-powered recommendations for your catalog</p>
+    </div>
+
+    <!-- Status Bar -->
+    <div id="health-bar" class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6 flex items-center gap-6">
+        <div class="flex items-center gap-2">
+            <span class="inline-block w-2 h-2 rounded-full bg-green-500"></span>
+            <span class="text-sm text-gray-600">Engine Active</span>
+        </div>
+        <div class="text-sm text-gray-600">
+            <span id="stat-users">{{ health.users }}</span> users |
+            <span id="stat-items">{{ health.routes }}</span> items |
+            <span id="stat-train">{{ health.train_interactions }}</span> interactions
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+        <!-- Left Column: Upload -->
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <h2 class="text-lg font-semibold text-gray-900 mb-4">1. Upload Your Data</h2>
+            <p class="text-sm text-gray-500 mb-4">
+                Drop your CSV files to get instant recommendations.
+                <a href="#" id="template-link" class="text-blue-600 hover:underline">Download template</a>
+            </p>
+
+            <form id="upload-form" hx-post="/upload" hx-target="#upload-result" hx-swap="innerHTML" enctype="multipart/form-data" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Items (products)</label>
+                    <input type="file" name="items_csv" accept=".csv"
+                           class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"/>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Interactions</label>
+                    <input type="file" name="interactions_csv" accept=".csv"
+                           class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"/>
+                </div>
+                <button type="submit"
+                        class="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 text-sm font-medium">
+                    Upload & Train
+                </button>
+            </form>
+            <div id="upload-result" class="mt-4"></div>
+        </div>
+
+        <!-- Right Column: Search -->
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <h2 class="text-lg font-semibold text-gray-900 mb-4">2. Get Recommendations</h2>
+            <form hx-post="/search" hx-target="#search-result" hx-swap="innerHTML" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">User ID</label>
+                    <input type="text" name="user_id" placeholder="user_001"
+                           value="user_001"
+                           class="block w-full rounded-md border-gray-300 border px-3 py-2 text-sm focus:border-blue-500 focus:ring-blue-500"/>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Top K</label>
+                    <input type="number" name="top_k" value="10" min="1" max="50"
+                           class="block w-full rounded-md border-gray-300 border px-3 py-2 text-sm focus:border-blue-500 focus:ring-blue-500"/>
+                </div>
+                <button type="submit"
+                        class="w-full bg-gray-900 text-white py-2 px-4 rounded-md hover:bg-gray-800 text-sm font-medium">
+                    Get Recommendations
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Recommendations Result -->
+    <div id="search-result" class="mt-6"></div>
+
+</div>
+
+<script src="https://unpkg.com/htmx.org@1.9.10"></script>
+</body>
+</html>
