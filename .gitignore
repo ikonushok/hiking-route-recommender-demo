@@ -16,6 +16,7 @@ build/
 .pytest_cache/
 .coverage
 htmlcov/
+.ipynb_checkpoints/
 
 # IDE
 .idea/
@@ -34,3 +35,13 @@ outputs/
 
 # Grafana local state (provisioned from files)
 grafana_data/
+
+# Local agent handoff files
+/agents/
+/AGENTS.md
+/agents_hiking_route_recommender_demo.zip
+/DEMO_ADAPTATION_REPORT.md
+/MIGRATION.md
+/archive/
+/docs/Project_settings_for_ChatGPT_hiking_route_recommender_demo.md
+/docs/README_hiking_route_recommender_demo_plan_ru.md
