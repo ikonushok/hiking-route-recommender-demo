@@ -1,10 +1,4 @@
-"""Pushgateway-backed pipeline metrics for offline evaluation runs.
-
-Mirrors src/monitoring/pipeline_metrics.py from go_through_the_forest
-(production).  Used by eval scripts to push precision/recall/NDCG/etc.
-into Prometheus so they can be tracked over time without scraping the
-live API.
-"""
+"""Pushgateway-backed pipeline metrics for offline evaluation runs."""
 
 from __future__ import annotations
 

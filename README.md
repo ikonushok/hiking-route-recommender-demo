@@ -2,11 +2,57 @@
 
 Синтетическое commercial-style demo рекомендательной системы для каталога hiking / tourism routes.
 
+[![CI](https://github.com/ikonushok/hiking-route-recommender-demo/actions/workflows/ci.yml/badge.svg)](https://github.com/ikonushok/hiking-route-recommender-demo/actions/workflows/ci.yml)
+
 Проект показывает практический pipeline каталожных рекомендаций:
 
 ```text
 synthetic data -> data loading -> feature engineering -> baseline -> retrieval -> merge -> business rules -> evaluation -> API
 ```
+
+## 30-second demo
+
+Запустить весь demo stack:
+
+```bash
+docker compose up --build
+```
+
+После запуска доступны:
+
+- Web UI: `http://localhost:8000`
+- API docs: `http://localhost:8000/docs`
+- API health: `http://localhost:8000/health`
+- API metrics: `http://localhost:8000/metrics`
+- Prometheus: `http://localhost:9090`
+- Grafana: `http://localhost:3000`
+
+Пример запроса:
+
+```bash
+curl -sS -X POST http://localhost:8000/recommendations \
+  -H 'Content-Type: application/json' \
+  -d '{"user_id":"user_001","region":"north","top_k":5,"max_difficulty":"moderate"}'
+```
+
+Остановить stack:
+
+```bash
+docker compose down
+```
+
+## What this proves
+
+Этот проект показывает не только retrieval logic, но и упаковку сервиса:
+
+- reproducible synthetic data pipeline без client data;
+- hybrid recommender: popularity, collaborative retrieval, content-based retrieval и candidate merger;
+- post-retrieval business rules с hard filters и fallback path;
+- offline evaluation artifacts для quality, coverage, novelty и diversity;
+- FastAPI serving contract с `/health`, `/recommendations`, `/metrics` и OpenAPI docs;
+- interactive web UI для быстрого portfolio walkthrough;
+- Docker Compose stack: API, Prometheus, Pushgateway и Grafana;
+- GitHub Actions CI: install, tests, smoke scripts, offline evaluation и Docker image build.
 
 ## Граница безопасности
 
@@ -34,7 +80,10 @@ MVP намеренно небольшой, но покрывает полный 
 - rank-based candidate merger;
 - post-retrieval business rules для region, difficulty, seen-route exclusion и fallback fill;
 - offline top-K evaluation на отложенных synthetic interactions, включая precision/recall/MAP/NDCG/coverage/novelty/diversity;
-- FastAPI endpoint для online-style recommendation serving.
+- FastAPI endpoint для online-style recommendation serving;
+- web UI для ручного walkthrough;
+- Prometheus metrics и Grafana dashboard;
+- Docker/CI packaging для воспроизводимого запуска.
 
 ## Краткая логика пайплайна
 
@@ -81,7 +130,11 @@ project/                                      # Корень demo-проекта
 ├─ README.md                                  # Основной README: обзор, запуск, pipeline, API и ссылки на docs
 ├─ pyproject.toml                             # Package metadata, pytest settings и dev-зависимости
 ├─ requirements.txt                           # Список runtime Python-зависимостей
+├─ Dockerfile                                 # API image для Docker Compose demo
+├─ docker-compose.yml                         # API + Prometheus + Pushgateway + Grafana
+├─ prometheus.yml                             # Prometheus scrape config для API и Pushgateway
 ├─ LICENSE                                    # Лицензия проекта
+├─ .github/workflows/ci.yml                   # GitHub Actions CI
 │
 ├─ data/                                      # Воспроизводимые synthetic CSV datasets
 │  ├─ synthetic_users.csv                     # Синтетические пользователи
@@ -107,7 +160,11 @@ project/                                      # Корень demo-проекта
 │  ├─ merger.py                               # Candidate merger, deduplication и score aggregation
 │  ├─ business_rules.py                       # Region/difficulty/seen filters и fallback fill
 │  ├─ evaluation.py                           # Offline precision/recall/MAP/NDCG/coverage/novelty/diversity metrics
-│  └─ api.py                                  # FastAPI app: `GET /health`, `POST /recommendations`
+│  ├─ monitoring.py                           # Prometheus metrics endpoint and counters/histograms
+│  ├─ pipeline_metrics.py                     # Pushgateway helpers for offline/load-test metrics
+│  ├─ web_ui.py                               # HTMX/Jinja web UI endpoints
+│  ├─ templates/                              # Web UI templates
+│  └─ api.py                                  # FastAPI app: UI, `GET /health`, `POST /recommendations`, `/metrics`
 │
 ├─ tests/                                     # Contract, smoke и regression tests для P0
 │  ├─ test_api.py                             # API health/recommendations contract checks
@@ -116,7 +173,8 @@ project/                                      # Корень demo-проекта
 │  ├─ test_data_loader.py                     # Synthetic schema, references и event-weight checks
 │  ├─ test_evaluation.py                      # Offline metrics behavior
 │  ├─ test_features.py                        # Route features, matrix aggregation и train-only checks
-│  └─ test_hybrid_retrieval.py                # Hybrid retrieval, merge и duplicate checks
+│  ├─ test_hybrid_retrieval.py                # Hybrid retrieval, merge и duplicate checks
+│  └─ load_test.py                            # Simple HTTP load test for `/recommendations`
 │
 ├─ docs/                                      # Документация baseline, архитектуры, evaluation и commercial handoff
 │  ├─ p0_baseline.md                          # Замороженный P0 scope, contracts и validation
@@ -127,6 +185,10 @@ project/                                      # Корень demo-проекта
 │
 ├─ outputs/                                   # Evaluation artifacts
 │  └─ evaluation_metrics.csv                  # CSV с offline metrics
+│
+├─ grafana/                                   # Provisioned datasource and dashboard
+│  ├─ dashboards/
+│  └─ datasources/
 │
 └─ notebooks/                                 # Notebook demo для ручного walkthrough
    └─ 01_pipeline_demo.ipynb                  # End-to-end demo pipeline
@@ -140,7 +202,7 @@ P0 зафиксирован как стабильный baseline этого demo
 
 Замороженный scope P0, контракты, команды проверки и границы расширения описаны в `docs/p0_baseline.md`.
 
-## Быстрый старт
+## Local development
 
 Установить локальный package:
 
@@ -178,6 +240,68 @@ python scripts/run_offline_evaluation.py
 python -m pytest
 ```
 
+## Docker demo
+
+Запустить API и observability stack одной командой:
+
+```bash
+docker compose up --build
+```
+
+Проверить API:
+
+```bash
+curl -sS http://localhost:8000/health
+```
+
+Проверить рекомендации:
+
+```bash
+curl -sS -X POST http://localhost:8000/recommendations \
+  -H 'Content-Type: application/json' \
+  -d '{"user_id":"user_001","region":"north","top_k":5,"max_difficulty":"moderate"}'
+```
+
+Проверить Prometheus targets:
+
+```bash
+curl -sS http://localhost:9090/api/v1/targets
+```
+
+Остановить stack:
+
+```bash
+docker compose down
+```
+
+## Observability
+
+API exposes Prometheus metrics at `/metrics`. The Docker Compose stack scrapes:
+
+- `api:8000` for API/runtime metrics;
+- `pushgateway:9091` for offline/load-test metrics pushed from scripts.
+
+Grafana is provisioned from `grafana/dashboards/recommender-demo.json` and uses the Prometheus datasource from `grafana/datasources/prometheus.yml`.
+
+Useful URLs after `docker compose up --build`:
+
+- `http://localhost:8000/metrics`
+- `http://localhost:9090`
+- `http://localhost:3000`
+
+## CI
+
+GitHub Actions workflow: `.github/workflows/ci.yml`.
+
+It validates:
+
+- editable install with `.[dev]`;
+- full pytest suite;
+- baseline and hybrid smoke scripts;
+- offline evaluation artifacts;
+- Docker Compose config;
+- API image build.
+
 ## Evaluation artifacts
 
 Offline evaluation записывает synthetic metrics в:
@@ -197,6 +321,23 @@ jupyter notebook notebooks/01_pipeline_demo.ipynb
 
 Notebook показывает data loading, feature engineering, retrieval sources, candidate merging, business rules, offline metrics включая novelty/diversity и пример API payload.
 Также notebook добавляет локальный каталог `src/` в `sys.path`, поэтому может запускаться из Jupyter kernel без установки package в editable mode.
+
+## Web UI demo
+
+После запуска API открыть:
+
+```text
+http://localhost:8000
+```
+
+Web UI показывает:
+
+- loaded synthetic dataset health;
+- upload form for custom CSV files that match the public synthetic schema;
+- recommendation search by `user_id` and `top_k`;
+- ranked recommendation cards with route/item metadata and retrieval sources.
+
+The live UI and Grafana dashboard are available from the Docker stack URLs above and can be used directly in portfolio walkthroughs.
 
 ## API demo
 
@@ -240,6 +381,17 @@ rank=2 route_id=route_054 score=0.6554 source=popularity
 ```
 
 Точные `route_id` и scores могут измениться при изменении конфигурации synthetic generator.
+
+## Load test
+
+При запущенном API можно выполнить небольшой HTTP load test:
+
+```bash
+LOAD_TEST_TARGET=http://localhost:8000 python tests/load_test.py --duration 30 --concurrency 10
+```
+
+Скрипт печатает latency/RPS summary и сохраняет локальный report в `outputs/load_test_report.json`.
+Если доступен Pushgateway, load-test metrics отправляются туда и становятся видны в Prometheus/Grafana.
 
 ## Архитектура
 

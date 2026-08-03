@@ -123,9 +123,6 @@ async def upload_data(
 ):
     """Upload custom CSVs, re-fit models, redirect to index."""
 
-    from hiking_recommender.api import runtime as rt
-    from hiking_recommender.api import build_runtime
-
     try:
         items_content = await items_csv.read()
         interactions_content = await interactions_csv.read()
@@ -142,7 +139,7 @@ async def upload_data(
 
         health = {
             "users": len(dataset.users),
-            "route": len(dataset.routes),
+            "routes": len(dataset.routes),
             "train_interactions": len(dataset.train_interactions),
             "test_interactions": len(dataset.test_interactions),
             "has_custom_data": True,

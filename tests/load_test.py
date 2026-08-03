@@ -3,8 +3,6 @@
 
 Запуск:
   venv/bin/python -m src.tests.load_test --duration 30 --concurrency 10
-
-Mirrors full_docker_release_v1/src/tests/load_test.py from go_through_the_forest.
 """
 
 from __future__ import annotations

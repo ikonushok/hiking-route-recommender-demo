@@ -1,8 +1,4 @@
-"""Prometheus metrics for the demo recommender API.
-
-Mirrors src/api/metrics.py from go_through_the_forest (production),
-simplified for the demo's in-memory cosine-similarity pipeline.
-"""
+"""Prometheus metrics for the demo recommender API."""
 
 from __future__ import annotations
 

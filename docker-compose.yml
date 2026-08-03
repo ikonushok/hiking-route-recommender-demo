@@ -1,4 +1,25 @@
 services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: hiking-route-recommender-demo-api:local
+    container_name: demo-api
+    ports:
+      - "8000:8000"
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=2).read()",
+        ]
+      interval: 30s
+      timeout: 3s
+      start_period: 10s
+      retries: 3
+
   prometheus:
     image: prom/prometheus:v3.5.0
     container_name: demo-prometheus
@@ -11,8 +32,9 @@ services:
       - "--config.file=/etc/prometheus/prometheus.yml"
       - "--storage.tsdb.path=/prometheus"
       - "--storage.tsdb.retention.time=7d"
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
+    depends_on:
+      api:
+        condition: service_healthy
 
   pushgateway:
     image: prom/pushgateway:v1.11.1
