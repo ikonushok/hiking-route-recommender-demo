@@ -7,3 +7,5 @@ pytest>=8.0
 prometheus_client>=0.20
 prometheus_fastapi_instrumentator>=6.0
 jinja2>=3.0
+python-multipart>=0.0.9
+requests>=2.31

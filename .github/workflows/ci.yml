@@ -1,0 +1,58 @@
+name: CI
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+jobs:
+  test:
+    name: Python tests and smoke checks
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+
+      - name: Install package
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e ".[dev]"
+
+      - name: Run tests
+        run: python -m pytest
+
+      - name: Run baseline smoke
+        run: python scripts/run_baseline_smoke.py
+
+      - name: Run hybrid smoke
+        run: python scripts/run_hybrid_smoke.py
+
+      - name: Run offline evaluation
+        run: python scripts/run_offline_evaluation.py
+
+      - name: Check evaluation artifacts
+        run: |
+          test -s outputs/evaluation_metrics.csv
+          test -s docs/evaluation_report.md
+
+  docker:
+    name: Docker packaging
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Validate compose config
+        run: docker compose config
+
+      - name: Build API image
+        run: docker compose build api

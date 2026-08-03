@@ -6,7 +6,7 @@ scrape_configs:
   - job_name: "recommender-demo"
     scrape_interval: 5s
     static_configs:
-      - targets: ["host.docker.internal:8001"]
+      - targets: ["api:8000"]
         labels:
           service: "hiking-recommender-demo"
 

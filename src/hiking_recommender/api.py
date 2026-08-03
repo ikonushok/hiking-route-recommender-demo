@@ -34,6 +34,7 @@ from hiking_recommender.schemas import (
     RecommendationRequest,
     RecommendationResponse,
 )
+from hiking_recommender.web_ui import router as web_ui_router
 
 DEFAULT_CANDIDATE_MULTIPLIER = 3
 
@@ -75,6 +76,7 @@ app = FastAPI(
 
 # ── Monitoring setup ──────────────────────────────────────────────
 setup_metrics(app)
+app.include_router(web_ui_router)
 
 model_users_count.set(len(runtime.dataset.users))
 model_items_count.set(len(runtime.dataset.routes))

@@ -16,6 +16,37 @@ def test_health_endpoint() -> None:
     assert payload["routes"] > 0
 
 
+def test_web_ui_index_endpoint() -> None:
+    response = client.get("/")
+
+    assert response.status_code == 200
+    assert "Recommender Lab" in response.text
+    assert "Engine Active" in response.text
+
+
+def test_web_ui_search_endpoint_returns_recommendations_partial() -> None:
+    response = client.post("/search", data={"user_id": "user_001", "top_k": "5"})
+
+    assert response.status_code == 200
+    assert "Recommendations for" in response.text
+    assert "user_001" in response.text
+    assert "route_" in response.text
+
+
+def test_web_ui_upload_endpoint_reports_validation_errors() -> None:
+    response = client.post(
+        "/upload",
+        files={
+            "items_csv": ("items.csv", b"route_id\nroute_001\n", "text/csv"),
+            "interactions_csv": ("interactions.csv", b"user_id\nuser_001\n", "text/csv"),
+        },
+    )
+
+    assert response.status_code == 200
+    assert "Error" in response.text
+    assert "missing columns" in response.text
+
+
 def test_recommendations_warm_user_contract() -> None:
     response = client.post(
         "/recommendations",
@@ -67,3 +98,22 @@ def test_recommendations_invalid_difficulty_returns_400() -> None:
     )
 
     assert response.status_code == 400
+
+
+def test_web_ui_upload_endpoint_accepts_synthetic_data() -> None:
+    with open("data/synthetic_routes.csv", "rb") as routes_file:
+        routes_content = routes_file.read()
+    with open("data/synthetic_interactions.csv", "rb") as interactions_file:
+        interactions_content = interactions_file.read()
+
+    response = client.post(
+        "/upload",
+        files={
+            "items_csv": ("synthetic_routes.csv", routes_content, "text/csv"),
+            "interactions_csv": ("synthetic_interactions.csv", interactions_content, "text/csv"),
+        },
+    )
+
+    assert response.status_code == 200
+    assert "Data uploaded & models trained!" in response.text
+    assert "items" in response.text
