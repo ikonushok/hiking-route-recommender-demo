@@ -167,49 +167,26 @@ flowchart LR
 In a production-like system the input could come from SQLite, warehouse tables or service events. In this demo the input is fixed as reproducible synthetic CSV files.
 
 ```text
-data/synthetic_users.csv
-data/synthetic_routes.csv
-data/synthetic_interactions.csv
-    |
-    v
-data_loader.py
-    |
-    v
-validated synthetic users/routes/interactions datasets
-    |
-    v
-features.py
-    |
-    v
-route features + user-route implicit-feedback matrix + seen-route maps
-    |
-    v
-baseline.py / collaborative.py / content_based.py
-    |
-    v
-retrieval candidates from popularity, item-item collaborative and content-based sources
-    |
-    v
-merger.py
-    |
-    v
-deduplicated hybrid candidate list with merged scores and sources
-    |
-    v
-business_rules.py
-    |-- region filter
-    |-- difficulty filter
-    |-- seen-route exclusion
-    `-- fallback fill
-    |
-    v
-evaluation.py / api.py
-    |
-    v
-offline metrics / hybrid API response
-    |
-    v
-final recommendations
+pipeline/
+├─ data/
+│  ├─ synthetic_users.csv
+│  ├─ synthetic_routes.csv
+│  └─ synthetic_interactions.csv
+│
+├─ data_loader.py              # validate synthetic users/routes/interactions
+├─ features.py                 # route features, implicit matrix, seen-route maps
+│
+├─ retrieval/
+│  ├─ baseline.py              # popularity candidates
+│  ├─ collaborative.py         # item-item collaborative candidates
+│  └─ content_based.py         # content/profile candidates
+│
+├─ merger.py                   # deduplicate candidates and merge scores
+├─ business_rules.py           # region, difficulty, seen-route filters and fallback fill
+│
+└─ outputs/
+   ├─ evaluation.py            # offline ranking metrics and artifacts
+   └─ api.py                   # FastAPI response with final recommendations
 ```
 
 ## Project Layout
