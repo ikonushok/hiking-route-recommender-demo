@@ -193,72 +193,72 @@ pipeline/
 
 ```text
 project/
-├─ README.md
-├─ pyproject.toml
-├─ requirements.txt
-├─ Dockerfile
-├─ docker-compose.yml
-├─ prometheus.yml
-├─ LICENSE
-├─ .github/workflows/ci.yml
+├─ README.md                                  # project overview, demo flow and portfolio proof points
+├─ pyproject.toml                             # package metadata, pytest config and dev extras
+├─ requirements.txt                           # runtime dependency list
+├─ Dockerfile                                 # API image for the Compose demo
+├─ docker-compose.yml                         # API, Prometheus, Pushgateway and Grafana stack
+├─ prometheus.yml                             # Prometheus scrape config
+├─ LICENSE                                    # project license
+├─ .github/workflows/ci.yml                   # install, tests, smokes, eval and Docker build
 │
-├─ data/
-│  ├─ synthetic_users.csv
-│  ├─ synthetic_routes.csv
-│  ├─ synthetic_interactions.csv
-│  ├─ synthetic_interactions_train.csv
-│  └─ synthetic_interactions_test.csv
+├─ data/                                      # reproducible synthetic CSV datasets
+│  ├─ synthetic_users.csv                     # synthetic user profiles
+│  ├─ synthetic_routes.csv                    # synthetic hiking route catalog
+│  ├─ synthetic_interactions.csv              # full implicit-feedback event log
+│  ├─ synthetic_interactions_train.csv        # train split for retrieval
+│  └─ synthetic_interactions_test.csv         # test split for offline evaluation
 │
-├─ scripts/
-│  ├─ generate_synthetic_data.py
-│  ├─ run_baseline_smoke.py
-│  ├─ run_hybrid_smoke.py
-│  └─ run_offline_evaluation.py
+├─ scripts/                                   # generation, smoke and evaluation CLIs
+│  ├─ generate_synthetic_data.py              # rebuild synthetic CSV files
+│  ├─ run_baseline_smoke.py                   # popularity baseline smoke check
+│  ├─ run_hybrid_smoke.py                     # hybrid retrieval smoke check
+│  └─ run_offline_evaluation.py               # write evaluation artifacts
 │
-├─ src/hiking_recommender/
-│  ├─ data_loader.py
-│  ├─ schemas.py
-│  ├─ features.py
-│  ├─ baseline.py
-│  ├─ collaborative.py
-│  ├─ content_based.py
-│  ├─ candidates.py
-│  ├─ merger.py
-│  ├─ business_rules.py
-│  ├─ evaluation.py
-│  ├─ monitoring.py
-│  ├─ pipeline_metrics.py
-│  ├─ web_ui.py
-│  ├─ templates/
-│  └─ api.py
+├─ src/hiking_recommender/                    # main Python package
+│  ├─ data_loader.py                          # CSV loading and schema validation
+│  ├─ schemas.py                              # API and recommendation data models
+│  ├─ features.py                             # route features and implicit matrix
+│  ├─ baseline.py                             # popularity baseline retrieval
+│  ├─ collaborative.py                        # item-item collaborative retrieval
+│  ├─ content_based.py                        # content-based retrieval
+│  ├─ candidates.py                           # candidate data structures
+│  ├─ merger.py                               # candidate merge and score aggregation
+│  ├─ business_rules.py                       # filters and fallback fill
+│  ├─ evaluation.py                           # offline top-K metrics
+│  ├─ monitoring.py                           # Prometheus API metrics
+│  ├─ pipeline_metrics.py                     # Pushgateway helpers
+│  ├─ web_ui.py                               # HTMX/Jinja UI endpoints
+│  ├─ templates/                              # UI templates
+│  └─ api.py                                  # FastAPI app and serving contract
 │
-├─ tests/
-│  ├─ test_api.py
-│  ├─ test_baseline_smoke.py
-│  ├─ test_business_rules.py
-│  ├─ test_data_loader.py
-│  ├─ test_evaluation.py
-│  ├─ test_features.py
-│  ├─ test_hybrid_retrieval.py
-│  └─ load_test.py
+├─ tests/                                     # contract, smoke and regression tests
+│  ├─ test_api.py                             # API and Web UI endpoint checks
+│  ├─ test_baseline_smoke.py                  # baseline smoke behavior
+│  ├─ test_business_rules.py                  # filter and fallback edge cases
+│  ├─ test_data_loader.py                     # schema/reference validation
+│  ├─ test_evaluation.py                      # offline metric behavior
+│  ├─ test_features.py                        # feature and matrix checks
+│  ├─ test_hybrid_retrieval.py                # retrieval/merge duplicate checks
+│  └─ load_test.py                            # simple HTTP load test
 │
-├─ docs/
-│  ├─ assets/
-│  ├─ p0_baseline.md
-│  ├─ architecture.md
-│  ├─ data_readiness_checklist.md
-│  ├─ commercial_use_cases.md
-│  └─ evaluation_report.md
+├─ docs/                                      # supporting documentation and screenshots
+│  ├─ assets/                                 # README screenshots
+│  ├─ p0_baseline.md                          # P0 scope and contracts
+│  ├─ architecture.md                         # module boundaries
+│  ├─ data_readiness_checklist.md             # catalog readiness checklist
+│  ├─ commercial_use_cases.md                 # demo portability notes
+│  └─ evaluation_report.md                    # generated synthetic metrics report
 │
-├─ outputs/
-│  └─ evaluation_metrics.csv
+├─ outputs/                                   # generated local artifacts
+│  └─ evaluation_metrics.csv                  # offline metric CSV
 │
-├─ grafana/
-│  ├─ dashboards/
-│  └─ datasources/
+├─ grafana/                                   # provisioned monitoring assets
+│  ├─ dashboards/                             # Grafana dashboard JSON
+│  └─ datasources/                            # Prometheus datasource config
 │
-└─ notebooks/
-   └─ 01_pipeline_demo.ipynb
+└─ notebooks/                                 # notebook walkthrough
+   └─ 01_pipeline_demo.ipynb                  # end-to-end demo notebook
 ```
 
 ## Baseline Status
