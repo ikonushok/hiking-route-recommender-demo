@@ -56,6 +56,8 @@ docker compose down
 
 ## Demo screenshots
 
+![Web UI overview](docs/assets/web-ui-overview.png)
+
 ![Web UI recommendations](docs/assets/web-ui.png)
 
 ![Grafana monitoring dashboard](docs/assets/grafana-dashboard.png)
