@@ -15,15 +15,28 @@
             </div>
 
             <div class="text-sm font-medium text-gray-900 mb-1">{{ rec.route_id }}</div>
-            <div class="text-xs text-gray-500 mb-2">{{ rec.category }}</div>
+            <div class="text-xs text-gray-500 mb-3">{{ rec.region }} · {{ rec.season }}</div>
 
-            <div class="flex items-center justify-between mb-2">
-                <span class="text-lg font-bold text-gray-900">{{ rec.price }} RUB</span>
+            <div class="grid grid-cols-3 gap-2 mb-3 text-xs text-gray-600">
+                <div>
+                    <div class="font-semibold text-gray-900">{{ rec.length_km }}</div>
+                    <div>km</div>
+                </div>
+                <div>
+                    <div class="font-semibold text-gray-900">{{ rec.duration_hours }}</div>
+                    <div>hours</div>
+                </div>
+                <div>
+                    <div class="font-semibold text-gray-900">{{ rec.elevation_gain_m }}</div>
+                    <div>m gain</div>
+                </div>
             </div>
 
-            <div class="flex items-center gap-2 mb-3">
-                <span class="text-xs px-2 py-0.5 rounded bg-gray-100 text-gray-600">{{ rec.tier }}</span>
-                <span class="text-xs text-yellow-500">★ {{ rec.rating }}</span>
+            <div class="flex flex-wrap gap-1 mb-3">
+                <span class="text-xs px-2 py-0.5 rounded bg-gray-100 text-gray-600">{{ rec.difficulty }}</span>
+                {% for tag in rec.tags %}
+                <span class="text-xs px-2 py-0.5 rounded bg-gray-50 text-gray-600 border border-gray-200">{{ tag }}</span>
+                {% endfor %}
             </div>
 
             <div class="flex flex-wrap gap-1">

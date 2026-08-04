@@ -29,8 +29,6 @@ from hiking_recommender.data_loader import (
 from hiking_recommender.features import build_seen_routes
 from hiking_recommender.merger import merge_candidates
 
-TIER_LABELS = {"easy": "budget", "moderate": "moderate", "hard": "premium"}
-
 router = APIRouter()
 templates = Jinja2Templates(directory=Path(__file__).parent / "templates")
 
@@ -217,18 +215,18 @@ async def search_recommendations(request: Request):
             if item_info.empty:
                 continue
             row = item_info.iloc[0]
-            price = int(row["length_km"] * 1000)
-            tier = TIER_LABELS.get(str(row["difficulty"]), str(row["difficulty"]))
             recommendations.append(
                 {
                     "route_id": m.route_id,
                     "rank": m.final_rank,
                     "score": m.merged_score,
-                    "category": str(row["region"]),
-                    "price": price,
-                    "rating": float(row["duration_hours"]),
-                    "tier": tier,
-                    "tags": str(row["route_tags"]),
+                    "region": str(row["region"]),
+                    "length_km": float(row["length_km"]),
+                    "duration_hours": float(row["duration_hours"]),
+                    "elevation_gain_m": int(row["elevation_gain_m"]),
+                    "difficulty": str(row["difficulty"]),
+                    "season": str(row["season"]),
+                    "tags": [tag for tag in str(row["route_tags"]).split("|") if tag],
                     "sources": list(m.sources),
                 }
             )
