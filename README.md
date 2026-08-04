@@ -10,6 +10,12 @@
 synthetic data -> data loading -> feature engineering -> baseline -> retrieval -> merge -> business rules -> evaluation -> API
 ```
 
+## Portfolio fit
+
+Best for: ML / recommender engineering portfolio.
+
+Shows: synthetic data pipeline, hybrid retrieval, business rules, offline evaluation, FastAPI serving, Docker, CI and observability.
+
 ## 30-second demo
 
 Запустить весь demo stack:
