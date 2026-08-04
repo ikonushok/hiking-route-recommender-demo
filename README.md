@@ -54,6 +54,12 @@ docker compose down
 - Docker Compose stack: API, Prometheus, Pushgateway и Grafana;
 - GitHub Actions CI: install, tests, smoke scripts, offline evaluation и Docker image build.
 
+## Demo screenshots
+
+![Web UI recommendations](docs/assets/web-ui.png)
+
+![Grafana monitoring dashboard](docs/assets/grafana-dashboard.png)
+
 ## Граница безопасности
 
 Репозиторий использует полностью синтетические данные.
@@ -336,8 +342,6 @@ Web UI показывает:
 - upload form for custom CSV files that match the public synthetic schema;
 - recommendation search by `user_id` and `top_k`;
 - ranked recommendation cards with route/item metadata and retrieval sources.
-
-The live UI and Grafana dashboard are available from the Docker stack URLs above and can be used directly in portfolio walkthroughs.
 
 ## API demo
 
