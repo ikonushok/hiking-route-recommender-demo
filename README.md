@@ -1,30 +1,30 @@
 # Hiking Route Recommender Demo
 
-Синтетическое commercial-style demo рекомендательной системы для каталога hiking / tourism routes.
+Synthetic commercial-style demo of a recommendation system for a hiking and tourism route catalog.
 
 [![CI](https://github.com/ikonushok/hiking-route-recommender-demo/actions/workflows/ci.yml/badge.svg)](https://github.com/ikonushok/hiking-route-recommender-demo/actions/workflows/ci.yml)
 
-Проект показывает практический pipeline каталожных рекомендаций:
+The project demonstrates a practical catalog recommendation pipeline:
 
 ```text
 synthetic data -> data loading -> feature engineering -> baseline -> retrieval -> merge -> business rules -> evaluation -> API
 ```
 
-## Portfolio fit
+## Portfolio Fit
 
 Best for: ML / recommender engineering portfolio.
 
 Shows: synthetic data pipeline, hybrid retrieval, business rules, offline evaluation, FastAPI serving, Docker, CI and observability.
 
-## 30-second demo
+## 30-Second Demo
 
-Запустить весь demo stack:
+Start the full demo stack:
 
 ```bash
 docker compose up --build
 ```
 
-После запуска доступны:
+Available after startup:
 
 - Web UI: `http://localhost:8000`
 - API docs: `http://localhost:8000/docs`
@@ -33,7 +33,7 @@ docker compose up --build
 - Prometheus: `http://localhost:9090`
 - Grafana: `http://localhost:3000`
 
-Пример запроса:
+Example API request:
 
 ```bash
 curl -sS -X POST http://localhost:8000/recommendations \
@@ -41,26 +41,26 @@ curl -sS -X POST http://localhost:8000/recommendations \
   -d '{"user_id":"user_001","region":"north","top_k":5,"max_difficulty":"moderate"}'
 ```
 
-Остановить stack:
+Stop the stack:
 
 ```bash
 docker compose down
 ```
 
-## What this proves
+## What This Proves
 
-Этот проект показывает не только retrieval logic, но и упаковку сервиса:
+This is not just a model wrapped in an API. The project shows an end-to-end service shape:
 
-- reproducible synthetic data pipeline без client data;
-- hybrid recommender: popularity, collaborative retrieval, content-based retrieval и candidate merger;
-- post-retrieval business rules с hard filters и fallback path;
-- offline evaluation artifacts для quality, coverage, novelty и diversity;
-- FastAPI serving contract с `/health`, `/recommendations`, `/metrics` и OpenAPI docs;
-- interactive web UI для быстрого portfolio walkthrough;
-- Docker Compose stack: API, Prometheus, Pushgateway и Grafana;
-- GitHub Actions CI: install, tests, smoke scripts, offline evaluation и Docker image build.
+- reproducible synthetic data pipeline without client data;
+- hybrid recommender: popularity, collaborative retrieval, content-based retrieval and candidate merger;
+- post-retrieval business rules with hard filters and fallback path;
+- offline evaluation artifacts for quality, coverage, novelty and diversity;
+- FastAPI serving contract with `/health`, `/recommendations`, `/metrics` and OpenAPI docs;
+- interactive web UI for a quick portfolio walkthrough;
+- Docker Compose stack with API, Prometheus, Pushgateway and Grafana;
+- GitHub Actions CI for install, tests, smoke scripts, offline evaluation and Docker image build.
 
-## Demo screenshots
+## Demo Screenshots
 
 ![Web UI overview](docs/assets/web-ui-overview.png)
 
@@ -68,11 +68,13 @@ docker compose down
 
 ![Grafana monitoring dashboard](docs/assets/grafana-dashboard.png)
 
-## Граница безопасности
+Grafana metrics in the screenshot are generated from synthetic load-test traffic.
 
-Репозиторий использует полностью синтетические данные.
+## Security Boundary
 
-В нём нет:
+The repository uses fully synthetic data.
+
+It does not contain:
 
 - client data;
 - production code;
@@ -80,195 +82,269 @@ docker compose down
 - internal business metrics;
 - customer-specific business logic.
 
-## Что показывает demo
+## Demo Scope
 
-MVP намеренно небольшой, но покрывает полный практический цикл рекомендательной системы:
+The MVP is intentionally compact, but it covers the full practical loop of a recommendation system:
 
-- воспроизводимая генерация synthetic data;
-- валидированная загрузка CSV;
-- feature engineering для маршрутов;
+- reproducible synthetic data generation;
+- validated CSV loading;
+- feature engineering for routes;
 - user-route implicit-feedback matrix;
-- popularity baseline с region filter, seen-route exclusion и cold-start fallback behavior;
+- popularity baseline with region filter, seen-route exclusion and cold-start fallback behavior;
 - item-item collaborative retriever;
 - content-based retriever;
 - rank-based candidate merger;
-- post-retrieval business rules для region, difficulty, seen-route exclusion и fallback fill;
-- offline top-K evaluation на отложенных synthetic interactions, включая precision/recall/MAP/NDCG/coverage/novelty/diversity;
-- FastAPI endpoint для online-style recommendation serving;
-- web UI для ручного walkthrough;
-- Prometheus metrics и Grafana dashboard;
-- Docker/CI packaging для воспроизводимого запуска.
+- post-retrieval business rules for region, difficulty, seen-route exclusion and fallback fill;
+- offline top-K evaluation on held-out synthetic interactions, including precision, recall, MAP, NDCG, coverage, novelty and diversity;
+- FastAPI endpoint for online-style recommendation serving;
+- web UI for manual walkthrough;
+- Prometheus metrics and Grafana dashboard;
+- Docker and CI packaging for reproducible execution.
 
-## Краткая логика пайплайна
+## Data Dictionary
 
-В production-like системе входом могли бы быть SQLite / raw tables. В этой demo-версии вход зафиксирован как воспроизводимые synthetic CSV files.
+The public demo schema is intentionally small and synthetic.
+
+### `data/synthetic_routes.csv`
+
+| Field | Meaning | Example |
+|---|---|---|
+| `route_id` | Public synthetic route identifier | `route_095` |
+| `region` | Synthetic route region label | `north`, `east`, `central` |
+| `length_km` | Route length in kilometers | `7.3` |
+| `duration_hours` | Estimated route duration | `1.9` |
+| `elevation_gain_m` | Elevation gain in meters | `123` |
+| `difficulty` | Route difficulty bucket | `easy`, `moderate`, `hard` |
+| `popularity` | Synthetic popularity score in `[0, 1]` | `0.87` |
+| `season` | Best synthetic season label | `spring`, `summer`, `autumn`, `winter` |
+| `route_tags` | Pipe-separated synthetic route tags | `forest|lake|wildlife` |
+
+### `data/synthetic_users.csv`
+
+| Field | Meaning | Example |
+|---|---|---|
+| `user_id` | Public synthetic user identifier | `user_001` |
+| `preferred_difficulty` | Synthetic user preference | `easy` |
+| `preferred_region` | Synthetic region preference | `north` |
+| `preferred_season` | Synthetic season preference | `autumn` |
+| `preferred_tags` | Pipe-separated synthetic tag preference | `forest|lake` |
+| `activity_level` | Synthetic user activity bucket | `regular` |
+
+### `data/synthetic_interactions.csv`
+
+| Field | Meaning | Example |
+|---|---|---|
+| `user_id` | Synthetic user identifier | `user_001` |
+| `route_id` | Synthetic route identifier | `route_095` |
+| `interaction_type` | Generic implicit-feedback event | `view`, `like`, `visit`, `checkin` |
+| `timestamp` | Synthetic event timestamp | ISO timestamp |
+| `interaction_weight` | Event weight used by retrieval features | `1`, `3`, `5`, `8` |
+
+`east`, `north`, `south`, `west` and `central` are generic synthetic region labels. They are not real locations.
+
+## Architecture Diagram
+
+```mermaid
+flowchart LR
+    A["Synthetic CSV data"] --> B["Data loading and validation"]
+    B --> C["Feature engineering"]
+    C --> D1["Popularity baseline"]
+    C --> D2["Item-item collaborative retrieval"]
+    C --> D3["Content-based retrieval"]
+    D1 --> E["Candidate merger"]
+    D2 --> E
+    D3 --> E
+    E --> F["Business rules and fallback fill"]
+    F --> G["FastAPI /recommendations"]
+    F --> H["Offline evaluation"]
+    G --> I["Prometheus /metrics"]
+    H --> J["Evaluation artifacts"]
+    I --> K["Grafana dashboard"]
+```
+
+## Pipeline Overview
+
+In a production-like system the input could come from SQLite, warehouse tables or service events. In this demo the input is fixed as reproducible synthetic CSV files.
 
 ```text
 data/synthetic_users.csv
 data/synthetic_routes.csv
 data/synthetic_interactions.csv
-    ↓
+    |
+    v
 data_loader.py
-    ↓
+    |
+    v
 validated synthetic users/routes/interactions datasets
-    ↓
+    |
+    v
 features.py
-    ↓
+    |
+    v
 route features + user-route implicit-feedback matrix + seen-route maps
-    ↓
+    |
+    v
 baseline.py / collaborative.py / content_based.py
-    ↓
+    |
+    v
 retrieval candidates from popularity, item-item collaborative and content-based sources
-    ↓
+    |
+    v
 merger.py
-    ↓
+    |
+    v
 deduplicated hybrid candidate list with merged scores and sources
-    ↓
+    |
+    v
 business_rules.py
-    ├─ region filter
-    ├─ difficulty filter
-    ├─ seen-route exclusion
-    └─ fallback fill
-    ↓
+    |-- region filter
+    |-- difficulty filter
+    |-- seen-route exclusion
+    `-- fallback fill
+    |
+    v
 evaluation.py / api.py
-    ↓
+    |
+    v
 offline metrics / hybrid API response
-    ↓
-итоговая выдача рекомендаций
+    |
+    v
+final recommendations
 ```
 
-## Архитектура проекта
+## Project Layout
 
 ```text
-project/                                      # Корень demo-проекта рекомендательной системы
-├─ README.md                                  # Основной README: обзор, запуск, pipeline, API и ссылки на docs
-├─ pyproject.toml                             # Package metadata, pytest settings и dev-зависимости
-├─ requirements.txt                           # Список runtime Python-зависимостей
-├─ Dockerfile                                 # API image для Docker Compose demo
-├─ docker-compose.yml                         # API + Prometheus + Pushgateway + Grafana
-├─ prometheus.yml                             # Prometheus scrape config для API и Pushgateway
-├─ LICENSE                                    # Лицензия проекта
-├─ .github/workflows/ci.yml                   # GitHub Actions CI
+project/
+├─ README.md
+├─ pyproject.toml
+├─ requirements.txt
+├─ Dockerfile
+├─ docker-compose.yml
+├─ prometheus.yml
+├─ LICENSE
+├─ .github/workflows/ci.yml
 │
-├─ data/                                      # Воспроизводимые synthetic CSV datasets
-│  ├─ synthetic_users.csv                     # Синтетические пользователи
-│  ├─ synthetic_routes.csv                    # Синтетический каталог маршрутов
-│  ├─ synthetic_interactions.csv              # Полный synthetic implicit-feedback dataset
-│  ├─ synthetic_interactions_train.csv        # Train split для retrieval/evaluation сценариев
-│  └─ synthetic_interactions_test.csv         # Test split для offline evaluation
+├─ data/
+│  ├─ synthetic_users.csv
+│  ├─ synthetic_routes.csv
+│  ├─ synthetic_interactions.csv
+│  ├─ synthetic_interactions_train.csv
+│  └─ synthetic_interactions_test.csv
 │
-├─ scripts/                                   # CLI-скрипты для генерации, smoke checks и evaluation
-│  ├─ generate_synthetic_data.py              # Генерация synthetic users/routes/interactions
-│  ├─ run_baseline_smoke.py                   # Smoke check popularity baseline
-│  ├─ run_hybrid_smoke.py                     # Smoke check hybrid retrieval + merger + business rules
-│  └─ run_offline_evaluation.py               # Запуск offline top-K evaluation и запись artifacts
+├─ scripts/
+│  ├─ generate_synthetic_data.py
+│  ├─ run_baseline_smoke.py
+│  ├─ run_hybrid_smoke.py
+│  └─ run_offline_evaluation.py
 │
-├─ src/hiking_recommender/                    # Основной Python package
-│  ├─ data_loader.py                          # Загрузка CSV и валидация public synthetic contracts
-│  ├─ schemas.py                              # Общие схемы и dataclass-модели рекомендаций
-│  ├─ features.py                             # Feature engineering и implicit-feedback matrix
-│  ├─ baseline.py                             # Popularity baseline и fallback candidates
-│  ├─ collaborative.py                        # Item-item collaborative retrieval
-│  ├─ content_based.py                        # Content-based retrieval по route features
-│  ├─ candidates.py                           # Общие структуры retrieval candidates
-│  ├─ merger.py                               # Candidate merger, deduplication и score aggregation
-│  ├─ business_rules.py                       # Region/difficulty/seen filters и fallback fill
-│  ├─ evaluation.py                           # Offline precision/recall/MAP/NDCG/coverage/novelty/diversity metrics
-│  ├─ monitoring.py                           # Prometheus metrics endpoint and counters/histograms
-│  ├─ pipeline_metrics.py                     # Pushgateway helpers for offline/load-test metrics
-│  ├─ web_ui.py                               # HTMX/Jinja web UI endpoints
-│  ├─ templates/                              # Web UI templates
-│  └─ api.py                                  # FastAPI app: UI, `GET /health`, `POST /recommendations`, `/metrics`
+├─ src/hiking_recommender/
+│  ├─ data_loader.py
+│  ├─ schemas.py
+│  ├─ features.py
+│  ├─ baseline.py
+│  ├─ collaborative.py
+│  ├─ content_based.py
+│  ├─ candidates.py
+│  ├─ merger.py
+│  ├─ business_rules.py
+│  ├─ evaluation.py
+│  ├─ monitoring.py
+│  ├─ pipeline_metrics.py
+│  ├─ web_ui.py
+│  ├─ templates/
+│  └─ api.py
 │
-├─ tests/                                     # Contract, smoke и regression tests для P0
-│  ├─ test_api.py                             # API health/recommendations contract checks
-│  ├─ test_baseline_smoke.py                  # Baseline smoke behavior
-│  ├─ test_business_rules.py                  # Business rules и fallback edge cases
-│  ├─ test_data_loader.py                     # Synthetic schema, references и event-weight checks
-│  ├─ test_evaluation.py                      # Offline metrics behavior
-│  ├─ test_features.py                        # Route features, matrix aggregation и train-only checks
-│  ├─ test_hybrid_retrieval.py                # Hybrid retrieval, merge и duplicate checks
-│  └─ load_test.py                            # Simple HTTP load test for `/recommendations`
+├─ tests/
+│  ├─ test_api.py
+│  ├─ test_baseline_smoke.py
+│  ├─ test_business_rules.py
+│  ├─ test_data_loader.py
+│  ├─ test_evaluation.py
+│  ├─ test_features.py
+│  ├─ test_hybrid_retrieval.py
+│  └─ load_test.py
 │
-├─ docs/                                      # Документация baseline, архитектуры, evaluation и commercial handoff
-│  ├─ p0_baseline.md                          # Замороженный P0 scope, contracts и validation
-│  ├─ architecture.md                         # Pipeline и module boundaries
-│  ├─ data_readiness_checklist.md             # Checklist для оценки готовности каталожных данных
-│  ├─ commercial_use_cases.md                 # Переносимость demo на другие каталожные домены
-│  └─ evaluation_report.md                    # Текущие synthetic offline metrics
+├─ docs/
+│  ├─ assets/
+│  ├─ p0_baseline.md
+│  ├─ architecture.md
+│  ├─ data_readiness_checklist.md
+│  ├─ commercial_use_cases.md
+│  └─ evaluation_report.md
 │
-├─ outputs/                                   # Evaluation artifacts
-│  └─ evaluation_metrics.csv                  # CSV с offline metrics
+├─ outputs/
+│  └─ evaluation_metrics.csv
 │
-├─ grafana/                                   # Provisioned datasource and dashboard
+├─ grafana/
 │  ├─ dashboards/
 │  └─ datasources/
 │
-└─ notebooks/                                 # Notebook demo для ручного walkthrough
-   └─ 01_pipeline_demo.ipynb                  # End-to-end demo pipeline
+└─ notebooks/
+   └─ 01_pipeline_demo.ipynb
 ```
 
-## Статус baseline
+## Baseline Status
 
-P0 зафиксирован как стабильный baseline этого demo. Он включает synthetic data generation, feature engineering, popularity/collaborative/content retrieval, candidate merging, business rules, offline evaluation и FastAPI serving.
+P0 is treated as the stable baseline for this demo. It includes synthetic data generation, feature engineering, popularity/collaborative/content retrieval, candidate merging, business rules, offline evaluation and FastAPI serving.
 
-Будущую ranking-логику нужно рассматривать как post-P0 расширение, а не как скрытую замену стабильного baseline.
+Future ranking logic should be treated as a post-P0 extension, not as a hidden replacement for the stable baseline.
 
-Замороженный scope P0, контракты, команды проверки и границы расширения описаны в `docs/p0_baseline.md`.
+Frozen P0 scope, contracts, validation commands and extension boundaries are documented in `docs/p0_baseline.md`.
 
-## Local development
+## Local Development
 
-Установить локальный package:
+Install the package locally:
 
 ```bash
 python -m pip install -e ".[dev]"
 ```
 
-Создать или обновить synthetic dataset:
+Create or refresh the synthetic dataset:
 
 ```bash
 python scripts/generate_synthetic_data.py
 ```
 
-Запустить baseline smoke check:
+Run baseline smoke check:
 
 ```bash
 python scripts/run_baseline_smoke.py
 ```
 
-Запустить hybrid retrieval smoke check:
+Run hybrid retrieval smoke check:
 
 ```bash
 python scripts/run_hybrid_smoke.py
 ```
 
-Запустить offline evaluation:
+Run offline evaluation:
 
 ```bash
 python scripts/run_offline_evaluation.py
 ```
 
-Запустить tests:
+Run tests:
 
 ```bash
 python -m pytest
 ```
 
-## Docker demo
+## Docker Demo
 
-Запустить API и observability stack одной командой:
+Start the API and observability stack with one command:
 
 ```bash
 docker compose up --build
 ```
 
-Проверить API:
+Check API health:
 
 ```bash
 curl -sS http://localhost:8000/health
 ```
 
-Проверить рекомендации:
+Check recommendations:
 
 ```bash
 curl -sS -X POST http://localhost:8000/recommendations \
@@ -276,13 +352,13 @@ curl -sS -X POST http://localhost:8000/recommendations \
   -d '{"user_id":"user_001","region":"north","top_k":5,"max_difficulty":"moderate"}'
 ```
 
-Проверить Prometheus targets:
+Check Prometheus targets:
 
 ```bash
 curl -sS http://localhost:9090/api/v1/targets
 ```
 
-Остановить stack:
+Stop the stack:
 
 ```bash
 docker compose down
@@ -316,50 +392,49 @@ It validates:
 - Docker Compose config;
 - API image build.
 
-## Evaluation artifacts
+## Evaluation Artifacts
 
-Offline evaluation записывает synthetic metrics в:
+Offline evaluation writes synthetic metrics to:
 
 - `outputs/evaluation_metrics.csv`;
 - `docs/evaluation_report.md`.
 
-Метрики полезны для проверки demo pipeline: ranking quality (`precision`, `recall`, `MAP`, `NDCG`), catalog reach (`coverage`) и P1-сигналы popularity bias / list variety (`novelty`, `diversity`). Они не являются утверждениями о production quality или business impact.
+The metrics are useful for checking the demo pipeline: ranking quality (`precision`, `recall`, `MAP`, `NDCG`), catalog reach (`coverage`) and P1 signals for popularity bias and list variety (`novelty`, `diversity`). They are not claims about production quality or business impact.
 
-## Notebook demo
+## Notebook Demo
 
-Открыть end-to-end notebook:
+Open the end-to-end notebook:
 
 ```bash
 jupyter notebook notebooks/01_pipeline_demo.ipynb
 ```
 
-Notebook показывает data loading, feature engineering, retrieval sources, candidate merging, business rules, offline metrics включая novelty/diversity и пример API payload.
-Также notebook добавляет локальный каталог `src/` в `sys.path`, поэтому может запускаться из Jupyter kernel без установки package в editable mode.
+The notebook shows data loading, feature engineering, retrieval sources, candidate merging, business rules, offline metrics including novelty/diversity and an API payload example.
 
-## Web UI demo
+## Web UI Demo
 
-После запуска API открыть:
+After starting the API, open:
 
 ```text
 http://localhost:8000
 ```
 
-Web UI показывает:
+The web UI shows:
 
 - loaded synthetic dataset health;
 - upload form for custom CSV files that match the public synthetic schema;
 - recommendation search by `user_id` and `top_k`;
-- ranked recommendation cards with route/item metadata and retrieval sources.
+- ranked recommendation cards with route metadata and retrieval sources.
 
-## API demo
+## API Demo
 
-Запустить API:
+Start the API locally:
 
 ```bash
 uvicorn hiking_recommender.api:app --reload
 ```
 
-Пример API request:
+Example API request:
 
 ```bash
 curl -sS -X POST http://127.0.0.1:8000/recommendations \
@@ -367,7 +442,7 @@ curl -sS -X POST http://127.0.0.1:8000/recommendations \
   -d '{"user_id":"user_001","region":"north","top_k":5,"max_difficulty":"moderate"}'
 ```
 
-Пример response:
+Example response:
 
 ```json
 {
@@ -384,7 +459,7 @@ curl -sS -X POST http://127.0.0.1:8000/recommendations \
 }
 ```
 
-## Пример baseline output
+## Baseline Output Example
 
 ```text
 Popularity baseline smoke passed
@@ -392,35 +467,36 @@ rank=1 route_id=route_095 score=0.8730 source=popularity
 rank=2 route_id=route_054 score=0.6554 source=popularity
 ```
 
-Точные `route_id` и scores могут измениться при изменении конфигурации synthetic generator.
+Exact `route_id` values and scores can change when the synthetic generator configuration changes.
 
-## Load test
+## Load Test
 
-При запущенном API можно выполнить небольшой HTTP load test:
+With the API running, execute a small HTTP load test:
 
 ```bash
 LOAD_TEST_TARGET=http://localhost:8000 python tests/load_test.py --duration 30 --concurrency 10
 ```
 
-Скрипт печатает latency/RPS summary и сохраняет локальный report в `outputs/load_test_report.json`.
-Если доступен Pushgateway, load-test metrics отправляются туда и становятся видны в Prometheus/Grafana.
+The script prints a latency/RPS summary and saves a local report to `outputs/load_test_report.json`.
 
-## Архитектура
+If Pushgateway is available, load-test metrics are pushed there and become visible in Prometheus/Grafana.
 
-MVP сохраняет разделение ответственности:
+## Module Boundaries
 
-- `data_loader.py` валидирует публичные synthetic CSV contracts.
-- `features.py` строит переиспользуемые route и interaction features.
-- `baseline.py` предоставляет самый простой надёжный recommendation source.
-- `collaborative.py` реализует item-item retrieval поверх implicit feedback.
-- `content_based.py` строит route-profile retrieval по item features.
-- `merger.py` дедуплицирует и ранжирует candidates из нескольких sources.
-- `business_rules.py` применяет hard product filters после retrieval и перед serving.
-- `evaluation.py` считает offline top-K metrics на synthetic test interactions.
-- `api.py` обслуживает тот же MVP pipeline через `GET /health` и `POST /recommendations`.
+The MVP keeps responsibilities separated:
 
-Pipeline diagram и границы модулей описаны в `docs/architecture.md`.
+- `data_loader.py` validates public synthetic CSV contracts.
+- `features.py` builds reusable route and interaction features.
+- `baseline.py` provides the simplest reliable recommendation source.
+- `collaborative.py` implements item-item retrieval over implicit feedback.
+- `content_based.py` builds route-profile retrieval from item features.
+- `merger.py` deduplicates and ranks candidates from multiple sources.
+- `business_rules.py` applies hard route filters after retrieval and before serving.
+- `evaluation.py` computes offline top-K metrics on synthetic test interactions.
+- `api.py` serves the MVP pipeline through `GET /health` and `POST /recommendations`.
 
-Client-facing checklist и переносимость demo описаны в `docs/data_readiness_checklist.md` и `docs/commercial_use_cases.md`.
+Detailed module boundaries are documented in `docs/architecture.md`.
 
-ALS намеренно не входит в первый MVP. Начальная collaborative model использует item-item cosine similarity поверх implicit feedback matrix, чтобы candidate merger можно было собрать без тяжёлых dependencies.
+Client-facing checklist and demo portability are documented in `docs/data_readiness_checklist.md` and `docs/commercial_use_cases.md`.
+
+ALS is intentionally not part of the first MVP. The initial collaborative model uses item-item cosine similarity over an implicit-feedback matrix so the candidate merger can be built without heavy dependencies.
