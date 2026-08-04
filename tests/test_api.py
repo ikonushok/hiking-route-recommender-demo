@@ -31,6 +31,10 @@ def test_web_ui_search_endpoint_returns_recommendations_partial() -> None:
     assert "Recommendations for" in response.text
     assert "user_001" in response.text
     assert "route_" in response.text
+    assert "km" in response.text
+    assert "hours" in response.text
+    assert "m gain" in response.text
+    assert "RUB" not in response.text
 
 
 def test_web_ui_upload_endpoint_reports_validation_errors() -> None:

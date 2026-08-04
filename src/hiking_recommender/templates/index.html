@@ -13,7 +13,7 @@
     <!-- Header -->
     <div class="mb-8">
         <h1 class="text-3xl font-bold text-gray-900">Recommender Lab</h1>
-        <p class="text-gray-500 mt-1">AI-powered recommendations for your catalog</p>
+        <p class="text-gray-500 mt-1">Route recommendations for a synthetic hiking catalog</p>
     </div>
 
     <!-- Status Bar -->
@@ -41,7 +41,7 @@
 
             <form id="upload-form" hx-post="/upload" hx-target="#upload-result" hx-swap="innerHTML" enctype="multipart/form-data" class="space-y-4">
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Items (products)</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Routes CSV</label>
                     <input type="file" name="items_csv" accept=".csv"
                            class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"/>
                 </div>
