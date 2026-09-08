@@ -350,6 +350,8 @@ API exposes Prometheus metrics at `/metrics`. The Docker Compose stack scrapes:
 
 Grafana is provisioned from `grafana/dashboards/recommender-demo.json` and uses the Prometheus datasource from `grafana/datasources/prometheus.yml`.
 
+A detailed walkthrough of the container stack, the request path and every metric definition is available in [`docs/architecture_walkthrough_ru.md`](docs/architecture_walkthrough_ru.md) (Russian, with Mermaid diagrams).
+
 Useful URLs after `docker compose up --build`:
 
 - `http://localhost:8000/metrics`
