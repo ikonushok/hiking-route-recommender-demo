@@ -3,6 +3,9 @@
 Synthetic commercial-style demo of a recommendation system for a hiking and tourism route catalog.
 
 [![CI](https://github.com/ikonushok/hiking-route-recommender-demo/actions/workflows/ci.yml/badge.svg)](https://github.com/ikonushok/hiking-route-recommender-demo/actions/workflows/ci.yml)
+[![Architecture diagram](https://img.shields.io/badge/architecture-interactive%20diagram-0b7285)](https://ikonushok.github.io/hiking-route-recommender-demo/diagrams/monitoring-stack.html)
+
+**[Open the interactive architecture diagram &rarr;](https://ikonushok.github.io/hiking-route-recommender-demo/diagrams/monitoring-stack.html)** Pan, zoom, switch themes and trace relationships across the running stack.
 
 The project demonstrates a practical catalog recommendation pipeline:
 
