@@ -4,6 +4,8 @@
 
 Схемы нарисованы на Mermaid, GitHub и PyCharm показывают их без плагинов.
 
+Ту же топологию можно [открыть интерактивно](https://ikonushok.github.io/hiking-route-recommender-demo/diagrams/monitoring-stack.html): масштаб, переключение темы, подсветка связей. Исходник схемы и команды пересборки лежат в `docs/diagrams/`.
+
 ---
 
 ## 1. Общая картина

@@ -1,0 +1,197 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "Мониторинг hiking-route-recommender-demo",
+    "quality_profile": "showcase",
+    "viewBox": [
+      1120,
+      600
+    ]
+  },
+  "components": [
+    {
+      "id": "client",
+      "type": "external",
+      "label": "Клиент",
+      "sublabel": "браузер, curl",
+      "pos": [
+        40,
+        180
+      ],
+      "size": [
+        140,
+        60
+      ]
+    },
+    {
+      "id": "api",
+      "type": "backend",
+      "label": "api",
+      "sublabel": "FastAPI + uvicorn :8000",
+      "pos": [
+        300,
+        180
+      ],
+      "size": [
+        160,
+        60
+      ]
+    },
+    {
+      "id": "prometheus",
+      "type": "database",
+      "label": "prometheus",
+      "sublabel": "TSDB, хранение 7 дней",
+      "pos": [
+        600,
+        180
+      ],
+      "size": [
+        160,
+        60
+      ]
+    },
+    {
+      "id": "grafana",
+      "type": "frontend",
+      "label": "grafana",
+      "sublabel": "дашборд :3000",
+      "pos": [
+        880,
+        180
+      ],
+      "size": [
+        150,
+        60
+      ]
+    },
+    {
+      "id": "scripts",
+      "type": "backend",
+      "label": "Офлайн-скрипты",
+      "sublabel": "оценка, нагрузочный тест",
+      "pos": [
+        40,
+        420
+      ],
+      "size": [
+        160,
+        60
+      ]
+    },
+    {
+      "id": "pushgateway",
+      "type": "messagebus",
+      "label": "pushgateway",
+      "sublabel": "держит последнее значение",
+      "pos": [
+        600,
+        420
+      ],
+      "size": [
+        160,
+        60
+      ]
+    }
+  ],
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "Сеть Docker Compose",
+      "wraps": [
+        "api",
+        "prometheus",
+        "grafana",
+        "pushgateway"
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "id": "request",
+      "from": "client",
+      "to": "api",
+      "label": "POST /recommendations",
+      "variant": "emphasis"
+    },
+    {
+      "id": "scrape-api",
+      "from": "prometheus",
+      "to": "api",
+      "label": "скрейп GET /metrics, 5 с",
+      "fromSide": "left",
+      "toSide": "right"
+    },
+    {
+      "id": "query",
+      "from": "grafana",
+      "to": "prometheus",
+      "label": "PromQL",
+      "fromSide": "left",
+      "toSide": "right"
+    },
+    {
+      "id": "scrape-pg",
+      "from": "prometheus",
+      "to": "pushgateway",
+      "label": "скрейп, honor_labels",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "labelDy": 100
+    },
+    {
+      "id": "push",
+      "from": "scripts",
+      "to": "pushgateway",
+      "label": "push_to_gateway",
+      "variant": "dashed"
+    },
+    {
+      "id": "dashboard",
+      "from": "client",
+      "to": "grafana",
+      "label": "смотрит дашборд",
+      "fromSide": "top",
+      "toSide": "top",
+      "via": [
+        [
+          110,
+          90
+        ],
+        [
+          955,
+          90
+        ]
+      ]
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "Почему стрелки идут от Prometheus",
+      "items": [
+        "Сервис ничего никуда не отправляет: он держит эндпоинт /metrics и ждёт",
+        "Prometheus сам опрашивает цели раз в пять секунд",
+        "Недоступность эндпоинта уже сигнал, отдельная проверка не нужна"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "Зачем отдельный Pushgateway",
+      "items": [
+        "Офлайн-прогон завершается раньше, чем его успеет опросить Prometheus",
+        "Такая задача отправляет метрики сама, а Prometheus забирает их из буфера",
+        "Флаг honor_labels сохраняет лейблы задачи вместо служебных"
+      ]
+    },
+    {
+      "dot": "slate",
+      "title": "Границы демо",
+      "items": [
+        "Один процесс uvicorn, данные лежат в CSV и грузятся в память при старте",
+        "Grafana поднята с анонимным входом: только для локального запуска"
+      ]
+    }
+  ]
+}

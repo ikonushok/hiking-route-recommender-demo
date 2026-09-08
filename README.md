@@ -352,6 +352,8 @@ Grafana is provisioned from `grafana/dashboards/recommender-demo.json` and uses 
 
 A detailed walkthrough of the container stack, the request path and every metric definition is available in [`docs/architecture_walkthrough_ru.md`](docs/architecture_walkthrough_ru.md) (Russian, with Mermaid diagrams).
 
+An interactive diagram of the same stack (pan/zoom, light/dark, relationship tracing) is published at [ikonushok.github.io/hiking-route-recommender-demo](https://ikonushok.github.io/hiking-route-recommender-demo/diagrams/monitoring-stack.html); its source specification and regeneration steps live in [`docs/diagrams/`](docs/diagrams/).
+
 Useful URLs after `docker compose up --build`:
 
 - `http://localhost:8000/metrics`
