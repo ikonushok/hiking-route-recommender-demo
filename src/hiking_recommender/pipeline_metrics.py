@@ -1,98 +1,56 @@
-"""Pushgateway-backed pipeline metrics for offline evaluation runs."""
-
-from __future__ import annotations
+"""Publish the demo's offline measurements as a cumulative Pushgateway snapshot."""
 
 import os
-from typing import Any
-
-from prometheus_client import CollectorRegistry, Gauge, push_to_gateway
-
-PUSHGATEWAY_URL = os.getenv("PUSHGATEWAY_URL", "127.0.0.1:9091")
-PUSHGATEWAY_TIMEOUT_SECONDS = float(os.getenv("PUSHGATEWAY_TIMEOUT_SECONDS", "5"))
-
-_PUSH_ENABLED: bool | None = None
-
-_REGISTRY = CollectorRegistry()
-_REGISTERED: dict[str, Gauge] = {}
+from prometheus_client import CollectorRegistry, push_to_gateway
+from prometheus_client.core import GaugeMetricFamily
 
 
-def _push_enabled() -> bool:
-    global _PUSH_ENABLED
-    if _PUSH_ENABLED is None:
-        _PUSH_ENABLED = os.getenv("PROMETHEUS_PUSH_ENABLED", "1").strip() not in (
-            "0",
-            "false",
-            "",
-        )
-    return _PUSH_ENABLED
+class _Measurements:
+    def __init__(self):
+        self.values = {}
+
+    def record(self, rows):
+        for row in rows:
+            labels = row.get("labels") or {}
+            keys = tuple(sorted(labels))
+            family = self.values.setdefault(row["name"], {
+                "help": row.get("description", ""), "keys": keys, "samples": {},
+            })
+            if family["keys"] != keys:
+                raise ValueError(f"Inconsistent labels for {row['name']}")
+            family["samples"][tuple(str(labels[key]) for key in keys)] = float(row["value"])
+
+    def collect(self):
+        for name, family in self.values.items():
+            metric = GaugeMetricFamily(name, family["help"], labels=family["keys"])
+            for labels, value in family["samples"].items():
+                metric.add_metric(labels, value)
+            yield metric
 
 
-def _get_or_create_gauge(
-    name: str,
-    label_names: list[str],
-    description: str,
-) -> Gauge:
-    key = name
-    if key in _REGISTERED:
-        return _REGISTERED[key]
-    g = Gauge(name, description, label_names, registry=_REGISTRY)
-    _REGISTERED[key] = g
-    return g
+_measurements = _Measurements()
+_registry = CollectorRegistry()
+_registry.register(_measurements)
 
 
-def push_pipeline_metric(
-    name: str,
-    value: float,
-    labels: dict[str, str] | None = None,
-    description: str = "",
-    job: str = "pipeline",
-) -> None:
-    """Push a single gauge metric to the Pushgateway."""
-    if not _push_enabled():
+def push_pipeline_metric(name, value, labels=None, description="", job="pipeline"):
+    """Publish one observation through the same snapshot used for batches."""
+    push_pipeline_metrics_batch([
+        dict(name=name, value=value, labels=labels, description=description)
+    ], job=job)
+
+
+def push_pipeline_metrics_batch(metrics, job="pipeline"):
+    """Keep previously published series when updating this process's snapshot."""
+    enabled = os.environ.get("PROMETHEUS_PUSH_ENABLED", "1").strip()
+    if enabled in {"", "0", "false"}:
         return
-
     try:
-        label_names = list(labels.keys()) if labels else []
-        g = _get_or_create_gauge(name, label_names, description)
-        if labels:
-            g.labels(**labels).set(value)
-        else:
-            g.set(value)
+        _measurements.record(metrics)
         push_to_gateway(
-            PUSHGATEWAY_URL,
-            job=job,
-            registry=_REGISTRY,
-            timeout=PUSHGATEWAY_TIMEOUT_SECONDS,
+            os.environ.get("PUSHGATEWAY_URL", "127.0.0.1:9091"),
+            registry=_registry, job=job,
+            timeout=float(os.environ.get("PUSHGATEWAY_TIMEOUT_SECONDS", "5")),
         )
-    except Exception as exc:
-        print(f"PUSH_METRIC_ERROR: {name}={value} labels={labels}: {exc}")
-
-
-def push_pipeline_metrics_batch(
-    metrics: list[dict[str, Any]],
-    job: str = "pipeline",
-) -> None:
-    """Push a batch of gauge metrics in a single Pushgateway call."""
-    if not _push_enabled():
-        return
-
-    try:
-        for m in metrics:
-            name = m["name"]
-            value = float(m["value"])
-            labels = m.get("labels")
-            description = m.get("description", "")
-            label_names = list(labels.keys()) if labels else []
-            g = _get_or_create_gauge(name, label_names, description)
-            if labels:
-                g.labels(**labels).set(value)
-            else:
-                g.set(value)
-        push_to_gateway(
-            PUSHGATEWAY_URL,
-            job=job,
-            registry=_REGISTRY,
-            timeout=PUSHGATEWAY_TIMEOUT_SECONDS,
-        )
-    except Exception as exc:
-        print(f"PUSH_METRICS_BATCH_ERROR: {exc}")
+    except Exception as error:
+        print(f"Offline metric publication failed: {error}")
